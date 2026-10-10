@@ -1,102 +1,180 @@
-
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ms">
 <head>
-<meta charset="UTF-8">
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SUARA2WORD PRO</title>
+<title>SUARA2WORD PRO SEKOLAH</title>
 <style>
-body{margin:0;background:#090b10;color:#fff;font-family:Arial,sans-serif;text-align:center;padding:25px}
-main{max-width:650px;margin:auto;background:#171923;padding:25px;border:1px solid #b89448;border-radius:18px}
-h1{color:#ffe4a1}
-button{padding:13px;margin:6px;border:1px solid #e8bd63;border-radius:10px;background:#292114;color:#ffe4a1;font-weight:bold;cursor:pointer}
-.primary{background:#e8bd63;color:#17120a}
-input{padding:12px;width:90%;max-width:420px;border-radius:8px;border:1px solid #555;background:#090b10;color:white}
-#timer{font-size:42px;color:#ffe4a1;margin:25px}
-#status{padding:12px;overflow-wrap:anywhere}
+:root{--gold:#e5bd63;--bg:#090b10;--panel:#171923;--line:#8b7948;--text:#f6f3e9;--muted:#b7bdc9;--green:#6fe0a5;--red:#ff9b9b}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#202431,#090b10 65%);color:var(--text);font-family:Arial,sans-serif;text-align:center;padding:22px;min-height:100vh}
+main{max-width:850px;margin:0 auto;background:linear-gradient(145deg,#171923,#10131b);padding:clamp(18px,4vw,30px);border:1px solid var(--line);border-radius:20px;box-shadow:0 20px 55px #0006}
+h1{color:#ffe4a1;font-size:clamp(25px,5vw,36px);margin:6px 0 10px}.school{font-weight:bold;margin:10px 0}.sub{color:var(--muted);margin:8px 0 22px;font-size:13px;letter-spacing:.7px}
+input,select,textarea{padding:12px;width:100%;max-width:520px;border-radius:9px;border:1px solid #555;background:#090b10;color:#fff;font-size:15px;margin:5px 0 12px}
+label{display:block;text-align:left;max-width:520px;margin:0 auto;color:#e8d59e;font-size:13px}
+#timer{font-size:clamp(40px,8vw,56px);color:#ffe4a1;margin:22px 0 12px;font-variant-numeric:tabular-nums}
+button{padding:12px 15px;margin:5px;border:1px solid #e8bd63;border-radius:10px;background:#292114;color:#ffe4a1;font-weight:bold;cursor:pointer}
+button.primary{background:#e8bd63;color:#17120a}button:disabled{opacity:.38;cursor:not-allowed}
+#status{padding:12px;overflow-wrap:anywhere;min-height:42px;color:#d6dbe5;font-size:14px}
+audio{width:100%;max-width:520px;margin:10px auto}
+.result{display:none;max-width:650px;margin:12px auto;padding:13px;border-radius:10px;background:#10251b;border:1px solid #347653;color:#b9f5d2;overflow-wrap:anywhere;text-align:left;line-height:1.6}
+.result.error{background:#2a1517;border-color:#8b4248;color:#ffc0c0}
+.result a{color:#ffe4a1;display:inline-block;margin:5px 12px 0 0}
+hr{border:0;border-top:1px solid #3b3e49;margin:25px 0}
+textarea{max-width:100%;min-height:180px;line-height:1.5;text-align:left}
+.small{font-size:12px;color:var(--muted);line-height:1.6}
 </style>
 </head>
 <body>
 <main>
-<h1>🎙️ SUARA2WORD PRO</h1>
-<p>SMK APIN-APIN KENINGAU</p>
-<p>RAKAMAN SUARA · BLACK GOLD PREMIUM</p>
-<input id="title" placeholder="Tajuk rakaman">
-<div id="timer">00:00:00</div>
-<button class="primary" id="start">● MULA RAKAM</button>
-<button id="pause" disabled>Ⅱ JEDA</button>
-<button id="stop" disabled>■ HENTI</button>
-<p id="status">Sedia untuk merakam.</p>
-<audio id="player" controls hidden></audio>
-<br>
-<button id="download" disabled>⬇ MUAT TURUN AUDIO</button>
-</main>
-<script>
-let recorder, chunks=[], blob, stream, elapsed=0, started=0, ticker, pausedAt=0;
+  <div style="font-size:30px">🎙️</div>
+  <h1>SUARA2WORD PRO</h1>
+  <div class="school">SMK APIN-APIN KENINGAU</div>
+  <div class="sub">RAKAMAN SUARA · BLACK GOLD PREMIUM</div>
 
-const $=id=>document.getElementById(id);
-function showTime(s){
-  s=Math.max(0,s);
-  const h=Math.floor(s/3600),m=Math.floor(s%3600/60),sec=s%60;
-  $('timer').textContent=[h,m,sec].map(n=>String(n).padStart(2,'0')).join(':');
+  <label for="title">Tajuk rakaman</label>
+  <input id="title" placeholder="Contoh: Morning prayer" autocomplete="off">
+
+  <label for="category">Kategori</label>
+  <select id="category">
+    <option>Ucapan</option><option>Mesyuarat</option><option>Taklimat</option>
+    <option>Pengajaran</option><option>Morning prayer</option><option>Lain-lain</option>
+  </select>
+
+  <div id="timer">00:00:00</div>
+  <div>
+    <button class="primary" id="start">● MULA RAKAM</button>
+    <button id="pause" disabled>Ⅱ JEDA</button>
+    <button id="stop" disabled>■ HENTI</button>
+  </div>
+  <div id="status">Sedia untuk merakam.</div>
+  <audio id="player" controls hidden></audio>
+  <div>
+    <button id="download" disabled>↓ MUAT TURUN AUDIO</button>
+    <button class="primary" id="saveAudio" disabled>☁ SIMPAN KE DRIVE</button>
+  </div>
+  <div id="audioResult" class="result"></div>
+
+  <hr>
+  <h2 style="color:#ffe4a1">PENJANA DOKUMEN WORD</h2>
+  <p class="small">Masukkan atau tampal transkrip. Versi ini belum menukar audio kepada teks secara automatik.</p>
+  <label for="transcript">Teks transkrip</label>
+  <textarea id="transcript" placeholder="Tampal atau taip teks ucapan di sini..."></textarea>
+  <button class="primary" id="saveWord">✦ JANA DOKUMEN WORD</button>
+  <div id="wordResult" class="result"></div>
+
+  <hr>
+  <h2 style="color:#ffe4a1">PUSAT DOKUMEN</h2>
+  <button id="storageInfo">📂 BUKA PAUTAN DRIVE & REKOD</button>
+  <div id="infoResult" class="result"></div>
+  <p class="small">Had muat naik audio: 5 MB setiap rakaman. Jika fail lebih besar, muat turun audio dan bahagikan kepada beberapa bahagian.</p>
+</main>
+
+<!-- Borang dihantar ke iframe tersembunyi untuk mengelakkan isu CORS pada respons POST. -->
+<iframe name="backendFrame" id="backendFrame" title="Pemprosesan sistem" style="display:none"></iframe>
+<form id="backendForm" method="post" target="backendFrame" style="display:none">
+  <input name="action"><input name="base64Data"><input name="mimeType"><input name="title"><input name="category"><textarea name="transcript"></textarea>
+</form>
+
+<script>
+/* URL Web App Apps Script. Pastikan deployment ini versi terkini. */
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxG30bMI9C1VVtUCUHaT_V9-1bNRddYjnsdsPTypTaPX0hq9lcEgHyWyVXt-AZQSdyD/exec';
+
+const $ = id => document.getElementById(id);
+let recorder=null, chunks=[], blob=null, blobUrl=null, timerId=null;
+let startedAt=0, pausedMs=0, paused=false, pendingAction='';
+
+function titleValue(){return $('title').value.trim() || 'Rakaman'}
+function categoryValue(){return $('category').value}
+function setStatus(t){$('status').textContent=t}
+function elapsed(){return pausedMs+(paused?0:Date.now()-startedAt)}
+function updateTimer(){let s=Math.floor(elapsed()/1000);$('timer').textContent=[Math.floor(s/3600),Math.floor(s%3600/60),s%60].map(v=>String(v).padStart(2,'0')).join(':')}
+function showResult(id,message,ok,links){
+  const box=$(id);box.className='result'+(ok?'':' error');box.style.display='block';box.replaceChildren();
+  const msg=document.createElement('div');msg.textContent=message;box.appendChild(msg);
+  (links||[]).forEach(item=>{const a=document.createElement('a');a.href=item.url;a.target='_blank';a.rel='noopener';a.textContent=item.label;box.appendChild(a)});
 }
-function tick(){
-  elapsed=Math.floor((Date.now()-started)/1000);
-  showTime(elapsed);
+function postToBackend(action,fields){
+  const form=$('backendForm');form.action=WEB_APP_URL;
+  Array.from(form.elements).forEach(el=>{if(el.name)el.value=''});
+  form.elements.action.value=action;
+  Object.keys(fields).forEach(k=>{if(form.elements[k])form.elements[k].value=fields[k] == null ? '' : fields[k]});
+  form.submit();
 }
-$('start').onclick=async()=>{
+window.addEventListener('message',event=>{
+  const d=event.data;if(!d||d.type!=='SUARA2WORD_RESULT')return;
+  const r=d.data||{};
+  if(pendingAction==='saveAudio'){
+    if(r.success)showResult('audioResult',r.message+' Fail: '+r.filename,true,[{label:'Buka fail Drive',url:r.url},{label:'Muat turun audio',url:r.downloadUrl}]);
+    else showResult('audioResult',r.message||'Gagal menyimpan audio.',false);
+  }else if(pendingAction==='saveTranscript'){
+    if(r.success)showResult('wordResult',r.message+' Fail: '+r.filename,true,[{label:'Buka fail Word',url:r.url},{label:'Muat turun Word',url:r.downloadUrl}]);
+    else showResult('wordResult',r.message||'Gagal menjana Word.',false);
+  }else if(pendingAction==='getAppInfo'){
+    if(r.success)showResult('infoResult','Pautan storan tersedia.',true,[{label:'Folder Drive',url:r.folderUrl},{label:'Google Sheets',url:r.sheetUrl}]);
+    else showResult('infoResult',r.message||'Gagal mendapatkan pautan storan.',false);
+  }
+  pendingAction='';
+});
+
+$('start').addEventListener('click',async()=>{
   try{
-    if(!navigator.mediaDevices?.getUserMedia)
-      throw Error('Pelayar tidak menyediakan akses mikrofon. Pastikan halaman dibuka melalui HTTPS.');
-    stream=await navigator.mediaDevices.getUserMedia({audio:true});
-    chunks=[];
-    const type=MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
-      ?'audio/webm;codecs=opus':'';
-    recorder=new MediaRecorder(stream,type?{mimeType:type}:{});
-    recorder.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};
+    if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia)throw new Error('Pelayar tidak menyokong mikrofon. Buka laman melalui HTTPS.');
+    const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+    let options={};
+    if(MediaRecorder.isTypeSupported('audio/webm;codecs=opus'))options.mimeType='audio/webm;codecs=opus';
+    else if(MediaRecorder.isTypeSupported('audio/mp4'))options.mimeType='audio/mp4';
+    recorder=new MediaRecorder(stream,options);chunks=[];blob=null;
+    recorder.ondataavailable=e=>{if(e.data&&e.data.size)chunks.push(e.data)};
     recorder.onstop=()=>{
       blob=new Blob(chunks,{type:recorder.mimeType||'audio/webm'});
-      $('player').src=URL.createObjectURL(blob);
-      $('player').hidden=false;
-      $('download').disabled=false;
-      stream?.getTracks().forEach(t=>t.stop());
-      $('status').textContent='Rakaman siap. Tekan Muat Turun Audio untuk menyimpan.';
+      if(blobUrl)URL.revokeObjectURL(blobUrl);blobUrl=URL.createObjectURL(blob);
+      $('player').src=blobUrl;$('player').hidden=false;$('download').disabled=false;$('saveAudio').disabled=false;
+      stream.getTracks().forEach(t=>t.stop());
+      setStatus('Rakaman siap. Main semula, muat turun atau simpan ke Drive.');
     };
-    recorder.start();
-    started=Date.now()-elapsed*1000;
-    ticker=setInterval(tick,500);
-    $('start').disabled=true;$('pause').disabled=false;$('stop').disabled=false;
-    $('status').textContent='Sedang merakam. Pastikan mikrofon berfungsi.';
-  }catch(e){
-    $('status').textContent='Ralat mikrofon: '+e.message;
-  }
-};
-$('pause').onclick=()=>{
+    recorder.start(1000);startedAt=Date.now();pausedMs=0;paused=false;
+    timerId=setInterval(updateTimer,250);$('start').disabled=true;$('pause').disabled=false;$('stop').disabled=false;
+    setStatus('Sedang merakam…');$('audioResult').style.display='none';
+  }catch(e){setStatus('Gagal memulakan rakaman: '+(e.message||e));}
+});
+$('pause').addEventListener('click',()=>{
   if(!recorder)return;
-  if(recorder.state==='recording'){
-    recorder.pause();clearInterval(ticker);
-    $('pause').textContent='▶ SAMBUNG';
-    $('status').textContent='Rakaman dijeda.';
-  }else if(recorder.state==='paused'){
-    recorder.resume();started=Date.now()-elapsed*1000;
-    ticker=setInterval(tick,500);
-    $('pause').textContent='Ⅱ JEDA';
-    $('status').textContent='Rakaman disambung.';
-  }
-};
-$('stop').onclick=()=>{
+  if(!paused){recorder.pause();pausedMs+=Date.now()-startedAt;paused=true;$('pause').textContent='▶ SAMBUNG';setStatus('Rakaman dijeda.')}
+  else{recorder.resume();startedAt=Date.now();paused=false;$('pause').textContent='Ⅱ JEDA';setStatus('Sedang merakam…')}
+  updateTimer();
+});
+$('stop').addEventListener('click',()=>{
   if(recorder&&recorder.state!=='inactive')recorder.stop();
-  clearInterval(ticker);
-  $('start').disabled=false;$('pause').disabled=true;$('stop').disabled=true;
-  $('pause').textContent='Ⅱ JEDA';
-};
-$('download').onclick=()=>{
+  clearInterval(timerId);$('start').disabled=false;$('pause').disabled=true;$('stop').disabled=true;$('pause').textContent='Ⅱ JEDA';updateTimer();
+});
+$('download').addEventListener('click',()=>{
+  if(!blob)return;const type=blob.type||'audio/webm';const ext=type.includes('mp4')?'mp4':type.includes('ogg')?'ogg':type.includes('mpeg')?'mp3':'webm';
+  const a=document.createElement('a');a.href=blobUrl;a.download=titleValue().replace(/[^a-z0-9-_ ]/gi,'').trim().replace(/\s+/g,'_')+'.'+ext;a.click();
+});
+$('saveAudio').addEventListener('click',()=>{
   if(!blob)return;
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  a.download=(($('title').value||'Rakaman').replace(/[^\w -]/g,'')||'Rakaman')+'.webm';
-  a.click();URL.revokeObjectURL(a.href);
-};
+  if(blob.size>5*1024*1024){showResult('audioResult','Fail melebihi 5 MB. Pendekkan rakaman atau muat turun audio untuk simpanan tempatan.',false);return}
+  showResult('audioResult','Sedang menghantar audio ke Google Drive…',true);
+  const reader=new FileReader();
+  reader.onload=()=>{
+    const b64=String(reader.result).split(',')[1]||'';pendingAction='saveAudio';
+    try{postToBackend('saveAudio',{base64Data:b64,mimeType:blob.type||'audio/webm',title:titleValue(),category:categoryValue()})}
+    catch(e){pendingAction='';showResult('audioResult','Tidak dapat menghantar: '+(e.message||e),false)}
+  };
+  reader.onerror=()=>showResult('audioResult','Gagal membaca audio pada peranti.',false);
+  reader.readAsDataURL(blob);
+});
+$('saveWord').addEventListener('click',()=>{
+  const transcript=$('transcript').value.trim();if(!transcript){showResult('wordResult','Sila masukkan teks transkrip dahulu.',false);return}
+  showResult('wordResult','Sedang menjana dokumen Word…',true);pendingAction='saveTranscript';
+  try{postToBackend('saveTranscript',{title:titleValue(),category:categoryValue(),transcript:transcript})}
+  catch(e){pendingAction='';showResult('wordResult','Tidak dapat menghantar: '+(e.message||e),false)}
+});
+$('storageInfo').addEventListener('click',()=>{
+  showResult('infoResult','Sedang mendapatkan pautan storan…',true);pendingAction='getAppInfo';
+  try{postToBackend('getAppInfo',{})}
+  catch(e){pendingAction='';showResult('infoResult','Tidak dapat mendapatkan pautan: '+(e.message||e),false)}
+});
 </script>
 </body>
 </html>
